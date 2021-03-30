@@ -1,65 +1,51 @@
+import React from 'react';
 import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Link from 'next/link'
+import { useState } from 'react';
 
-export default function Home() {
+
+export default function Home({ voyages }) {
+  console.log(voyages);
+
+  const [variable, modify] = useState(0)
+
+  const test = () => {
+    modify(variable + 1)
+  }
+
   return (
-    <div className={styles.container}>
+    <>
       <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <title>Titre de ma page</title>
       </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
+      <h1>Page d'accueil</h1>
+      <p onClick={test}>{variable}</p>
+      <Link href="/login">Login</Link>
+      <ul>
+        {voyages.map((voyage, i) =>
+          <li key={i}>
+            <Link href={`/voyage/${voyage._id}`}>{voyage.title}</Link>
+          </li>
+        )}
+      </ul>
+    </>
   )
+}
+
+export async function getServerSideProps() {
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjljNjlmMmIyMDU3YzdiMjcyY2VmODMiLCJpYXQiOjE2MTcwNDE0MjEsImV4cCI6MTYxNzEyNzgyMX0.VysOEuhV8V3vadjNGim2nF_15aV7mBYxA_xiZ8It-54'
+  const voyages = await fetch('http://localhost:3001/api/stuff', {
+    headers: {
+      authorization: `Bearer ${token}`
+    },
+  })
+    .then(res => res.json())
+    .catch(err => {
+      console.log(err);
+    })
+  return {
+    props: {
+      voyages
+    }
+  }
 }
