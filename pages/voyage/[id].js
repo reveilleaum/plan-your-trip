@@ -12,16 +12,22 @@ export default function Voyage({ voyage }) {
 }
 
 export async function getServerSideProps({ req, params }) {
-  const voyage = await fetch(`http://localhost:3001/api/stuff/${params.id}`, {
-    headers: {
-      authorization: `Bearer ${req.cookies.token}`
-    },
-  })
-    .then(res => res.json())
+  if (req.cookies.token) {
+    const voyage = await fetch(`http://localhost:3001/api/stuff/${params.id}`, {
+      headers: {
+        authorization: `Bearer ${req.cookies.token}`
+      },
+    })
+      .then(res => res.json())
 
-  return {
-    props: {
-      voyage
+    return {
+      props: {
+        voyage
+      }
     }
+  } else {
+    res.statusCode = 302;
+    res.setHeader('location', '/login');
+    res.end();
   }
 }
