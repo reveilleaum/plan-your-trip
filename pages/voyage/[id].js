@@ -1,10 +1,10 @@
 import Head from 'next/head'
 import Link from 'next/link'
 
-export default function voyage({ voyage }) {
+export default function Voyage({ voyage }) {
   return (
     <>
-      <Link href={'/dashboard'}>Retour</Link>
+      <Link href={'/dashboard'}>Dashboard</Link>
       <h1>{voyage.description}</h1>
       <h2>{voyage.price}</h2>
     </>
@@ -18,9 +18,7 @@ export async function getServerSideProps({ req, params }) {
     },
   })
     .then(res => res.json())
-    .catch(err => {
-      console.log(err);
-    })
+
   return {
     props: {
       voyage

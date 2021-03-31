@@ -8,6 +8,7 @@ export default function Dashboard({ voyages }) {
 
   return (
     <>
+      <Link href={'/'}>Homepage</Link>
       <h1>Dashboard</h1>
 
       <ul>
@@ -29,19 +30,23 @@ export default function Dashboard({ voyages }) {
   )
 }
 
-export async function getServerSideProps({ req }) {
-  const voyages = await fetch('http://localhost:3001/api/stuff', {
-    headers: {
-      authorization: `Bearer ${req.cookies.token}`
-    },
-  })
-    .then(res => res.json())
-    .catch(err => {
-      console.log(err);
+export async function getServerSideProps({ req, res }) {
+  if (req.cookies.token) {
+    const voyages = await fetch('http://localhost:3001/api/stuff', {
+      headers: {
+        authorization: `Bearer ${req.cookies.token}`
+      },
     })
-  return {
-    props: {
-      voyages
+      .then(res => res.json())
+
+    return {
+      props: {
+        voyages
+      }
     }
+  } else {
+    res.statusCode = 302;
+    res.setHeader('location', '/login');
+    res.end();
   }
 }

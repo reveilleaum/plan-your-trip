@@ -5,11 +5,13 @@ import { useState } from 'react';
 import styles from '../styles/Home.module.css'
 import axios from 'axios';
 import { useCookies } from "react-cookie"
+import { useRouter } from 'next/router'
 
 
 export default function Login() {
 
   const [cookie, setCookie] = useCookies(['token'])
+  const router = useRouter()
 
   const connect = () => {
     axios.post('http://localhost:3001/api/auth/login', {
@@ -17,7 +19,6 @@ export default function Login() {
       password: 'iceman55'
     })
       .then(res => {
-        console.log(res);
         setCookie('token', res.data.token, {
           path: '/',
           maxAge: 3600, // secondes (1hr)
@@ -25,6 +26,7 @@ export default function Login() {
           // httpOnly: true,
           secure: true
         })
+        router.push('/dashboard')
       })
       .catch(err => {
         console.log(err);
@@ -33,7 +35,7 @@ export default function Login() {
 
   return (
     <>
-      <Link href={'/dashboard'}>Dashboard</Link>
+      <Link href={'/'}>Homepage</Link>
       <h1>Login</h1>
       <button onClick={connect}>Connection</button>
     </>
