@@ -23,7 +23,7 @@ export default function Home() {
       <ul>
         <li><Link href="/dashboard">Dashboard</Link></li>
         <li><Link href="/login">Login</Link></li>
-        <li><Link href="/signin">Sign in</Link></li>
+        <li><Link href="/signup">Sign up</Link></li>
       </ul>
 
       <p onClick={test}>{variable}</p>
