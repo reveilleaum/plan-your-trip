@@ -18,13 +18,15 @@ export default function Login() {
       password: event.target.password.value
     })
       .then(res => {
-        setCookie('token', res.data.token, {
+        const options = {
           path: '/',
           maxAge: 3600, // secondes (1hr)
           sameSite: true,
           // httpOnly: true,
           secure: true
-        })
+        }
+        setCookie('token', res.data.token, options)
+        setCookie('userId', res.data.userId, options)
         router.push('/dashboard')
       })
       .catch(err => {

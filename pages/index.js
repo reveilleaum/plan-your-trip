@@ -23,7 +23,7 @@ export default function Home() {
   /////
 
   const dispatch = useDispatch();
-  const [cookies, setCookie, removeCookie] = useCookies(['token'])
+  const [cookies, setCookie, removeCookie] = useCookies(['token', 'userId'])
   const router = useRouter()
 
   const logInOut = () => {
@@ -41,6 +41,7 @@ export default function Home() {
       </Head>
 
       <h1>Homepage</h1>
+      <p>{cookies.userId}</p>
 
       <ul>
         <li><Link href="/dashboard">Dashboard</Link></li>
