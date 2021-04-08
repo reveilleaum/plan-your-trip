@@ -1,22 +1,21 @@
-import React from 'react';
-import Head from 'next/head'
+import React from 'react'
 import Link from 'next/link'
-import { useState } from 'react';
-import styles from '../styles/Home.module.css'
-import axios from 'axios';
+import axios from 'axios'
 import { useCookies } from "react-cookie"
 import { useRouter } from 'next/router'
 
 
 export default function Login() {
 
-  const [cookie, setCookie] = useCookies(['token'])
+  const [cookies, setCookie, removeCookie] = useCookies(['token'])
   const router = useRouter()
 
-  const connect = () => {
+  const createUser = async event => {
+    event.preventDefault()
+
     axios.post('http://localhost:3001/api/auth/login', {
-      email: 'reveilleaum@gmail.com',
-      password: 'iceman55'
+      email: event.target.email.value,
+      password: event.target.password.value
     })
       .then(res => {
         setCookie('token', res.data.token, {
@@ -37,7 +36,13 @@ export default function Login() {
     <>
       <Link href={'/'}>Homepage</Link>
       <h1>Login</h1>
-      <button onClick={connect}>Connection</button>
+      <form onSubmit={createUser}>
+        <label htmlFor="email">email</label>
+        <input id="email" name="email" type="email" required />
+        <label htmlFor="password">password</label>
+        <input id="password" name="password" type="password" required />
+        <button type="submit">Connexion</button>
+      </form>
     </>
   )
 }
