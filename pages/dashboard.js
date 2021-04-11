@@ -1,6 +1,10 @@
-import React from 'react';
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 
+const DynamicComponentWithNoSSR = dynamic(
+  () => import('../components/calendar'),
+  { ssr: false }
+)
 
 export default function Dashboard({ voyages }) {
 
@@ -24,6 +28,8 @@ export default function Dashboard({ voyages }) {
           </li>
         )}
       </ul>
+
+      <DynamicComponentWithNoSSR />
     </>
   )
 }
