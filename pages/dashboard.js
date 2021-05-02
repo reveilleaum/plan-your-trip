@@ -29,7 +29,7 @@ export default function Dashboard({ voyages }) {
         )}
       </ul>
 
-      <DynamicComponentWithNoSSR />
+      <DynamicComponentWithNoSSR data={voyages} />
     </>
   )
 }
