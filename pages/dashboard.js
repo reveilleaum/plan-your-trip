@@ -1,12 +1,6 @@
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 
-const DynamicComponentWithNoSSR = dynamic(
-  () => import('../components/calendar'),
-  { ssr: false }
-)
-
-export default function Dashboard({ voyages }) {
+export default function Dashboard({ trips }) {
 
   return (
     <>
@@ -15,37 +9,34 @@ export default function Dashboard({ voyages }) {
 
       <ul>
         <li><Link href="/login">Voir mes dépenses</Link></li>
-        <li><Link href="/dashboard">Créer un voyage</Link></li>
+        <li><Link href="/dashboard">Créer un Voyage</Link></li>
         <li><Link href="/signin">Ajouter des personnes</Link></li>
         <li><Link href="/signin">Notifications</Link></li>
         <li><Link href="/conversations">Conversations</Link></li>
       </ul>
 
       <ul>
-        {voyages.map((voyage, i) =>
+        {trips.map((trip, i) =>
           <li key={i}>
-            <Link href={`/voyage/${voyage._id}`}>{voyage.title}</Link>
+            <Link href={`/voyage/${trip._id}`}>{trip.title}</Link>
           </li>
         )}
       </ul>
-
-      <DynamicComponentWithNoSSR data={voyages} />
     </>
   )
 }
 
 export async function getServerSideProps({ req, res }) {
   if (req.cookies.token) {
-    const voyages = await fetch('http://localhost:3001/api/stuff', {
+    const trips = await fetch('http://localhost:3001/api/trip', {
       headers: {
         authorization: `Bearer ${req.cookies.token}`
       },
-    })
-      .then(res => res.json())
+    }).then(res => res.json())
 
     return {
       props: {
-        voyages
+        trips
       }
     }
   } else {
