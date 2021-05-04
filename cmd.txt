@@ -1,3 +1,4 @@
 yarn create next-app
 npm install redux react-redux next-redux-wrapper
 npm install react-cookie
+npm install --save @toast-ui/react-calendar
