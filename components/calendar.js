@@ -2,11 +2,14 @@ import Calendar from '@toast-ui/react-calendar'
 import 'tui-calendar/dist/tui-calendar.css'
 import 'tui-date-picker/dist/tui-date-picker.css'
 import 'tui-time-picker/dist/tui-time-picker.css'
+import React from 'react'
 import { useState } from 'react'
 
 
 export default function Scheduler(props) {
   console.log(props);
+
+  const calendarRef = React.createRef();
 
   const [events, updateEvents] = useState([
     {
@@ -70,7 +73,20 @@ export default function Scheduler(props) {
     }, 500);
   };
 
+  const [modalOpen, toggleModal] = useState(false)
+
+  const handleClickPrevButton = () => {
+    const calendarInstance = calendarRef.current.getInstance();
+    calendarInstance.prev();
+  };
+
+  const handleClickNextButton = () => {
+    const calendarInstance = calendarRef.current.getInstance();
+    calendarInstance.next();
+  };
+
   const handleBeforeCreateSchedule = event => {
+    toggleModal(true)
     console.log(event);
   }
 
@@ -78,12 +94,36 @@ export default function Scheduler(props) {
     console.log(event);
   }
 
+  const modalContent = () => {
+    if (modalOpen) {
+      return (
+        <div className="modal">
+          <label>Nom de l'activité</label>
+          <input type="text" />
+          <label>Personnes assignées</label>
+          <select>
+            <option value=""></option>
+          </select>
+          <label>Coût de l'activité</label>
+          <input type="number"/>
+          <label>Personnes qui ont payé</label>
+          <select>
+            <option value=""></option>
+          </select>
+        </div>
+      )
+    }
+  }
+
   return (
     <div>
-      <div className="modal">
-
-      </div>
+      <nav>
+        <button onClick={handleClickPrevButton}>Prev</button>
+        <button onClick={handleClickNextButton}>Next</button>
+      </nav>
+      {modalContent()}
       <Calendar
+        ref={calendarRef}
         taskView={false}
         scheduleView={['time']}
         week={{
