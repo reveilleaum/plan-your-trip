@@ -6,26 +6,26 @@ const DynamicComponentWithNoSSR = dynamic(
   { ssr: false }
 )
 
-export default function Trip({ trip, activities }) {
+export default function Trip({ trip, users }) {
   return (
     <>
       <Link href={'/dashboard'}>Dashboard</Link>
       <h1>{trip.title}</h1>
 
-      <DynamicComponentWithNoSSR data={{trip, activities}} />
+      <DynamicComponentWithNoSSR data={{trip, users}} />
     </>
   )
 }
 
 export async function getServerSideProps({ req, params }) {
   if (req.cookies.token) {
-    const [trip, activities] = await Promise.all([
+    const [trip, users] = await Promise.all([
       fetch(`http://localhost:3001/api/trip/${params.id}`, {
         headers: {
           authorization: `Bearer ${req.cookies.token}`
         }
       }),
-      fetch(`http://localhost:3001/api/activity`, {
+      fetch(`http://localhost:3001/api/user`, {
         headers: {
           authorization: `Bearer ${req.cookies.token}`
         }
@@ -37,7 +37,7 @@ export async function getServerSideProps({ req, params }) {
     return {
       props: {
         trip,
-        activities
+        users
       }
     }
   } else {

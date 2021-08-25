@@ -4,89 +4,18 @@ import 'tui-date-picker/dist/tui-date-picker.css'
 import 'tui-time-picker/dist/tui-time-picker.css'
 import React from 'react'
 import { useState } from 'react'
+import axios from 'axios'
+import { useCookies } from "react-cookie"
 
 
 export default function Scheduler(props) {
-  console.log(props);
-
   const calendarRef = React.createRef();
-
-  const [events, updateEvents] = useState([
-    {
-      id: '1',
-      title: 'Mon activité',
-      category: 'time',
-      start: '2021-05-03T12:00:00',
-      end: '2021-05-03T14:00:00',
-      body: {
-        title: 'body title'
-      },
-    },
-    {
-      id: '2',
-      title: 'Mon autre activité',
-      category: 'time',
-      start: '2021-05-04T15:00:00',
-      end: '2021-05-04T18:00:00',
-      body: {
-        title: 'body title'
-      },
-    },
-  ])
-
-  const handleBeforeUpdateSchedule = event => {
-    const eventId = event.schedule.id
-
-    let test = [
-      {
-        id: '1',
-        title: 'Mon activité 2',
-        category: 'time',
-        start: '2021-05-03T12:00:00',
-        end: '2021-05-03T14:00:00',
-        body: {
-          title: 'body title'
-        },
-      },
-      {
-        id: '2',
-        title: 'Mon autre activité 2',
-        category: 'time',
-        start: '2021-05-04T15:00:00',
-        end: '2021-05-04T18:00:00',
-        body: {
-          title: 'body title'
-        },
-      },
-    ]
-
-    for (event of test) {
-      if (event.id === eventId) {
-        event.title = 'new title'
-      }
-    }
-
-    test.find(event => event.id === eventId).title = 'special title';
-
-    setTimeout(() => {
-      updateEvents(test)
-    }, 500);
-  };
-
-  const [modalOpen, toggleModal] = useState(false)
-
-  const handleClickPrevButton = () => {
-    const calendarInstance = calendarRef.current.getInstance();
-    calendarInstance.prev();
-  };
-
-  const handleClickNextButton = () => {
-    const calendarInstance = calendarRef.current.getInstance();
-    calendarInstance.next();
-  };
+  const [cookies] = useCookies(['token'])
 
   const handleBeforeCreateSchedule = event => {
-    toggleModal(true)
+    document.getElementById('modal').setAttribute('start', event.start._date)
+    document.getElementById('modal').setAttribute('end', event.end._date)
+    document.getElementById('modal').style.display = 'block'
     console.log(event);
   }
 
@@ -94,34 +23,80 @@ export default function Scheduler(props) {
     console.log(event);
   }
 
-  const modalContent = () => {
-    if (modalOpen) {
-      return (
-        <div className="modal">
-          <label>Nom de l'activité</label>
-          <input type="text" />
-          <label>Personnes assignées</label>
-          <select>
-            <option value=""></option>
-          </select>
-          <label>Coût de l'activité</label>
-          <input type="number"/>
-          <label>Personnes qui ont payé</label>
-          <select>
-            <option value=""></option>
-          </select>
-        </div>
-      )
-    }
+  const handleBeforeUpdateSchedule = event => {
+    console.log(event);
   }
+
+  const updateSchedule = () => {
+    const activity_name = document.getElementById('activity_name').value
+    const assigned_users = Array.from(document.getElementById('assigned_users').options).filter(option => option.selected)
+    const expenses_total = document.getElementById('expenses_total').value
+    const expenses_users = Array.from(document.getElementById('expenses_users').options).filter(option => option.selected)
+    const start = document.getElementById('modal').getAttribute('start')
+    const end = document.getElementById('modal').getAttribute('end')
+
+    axios.post('http://localhost:3001/api/activity',
+      {
+        title: 'activity_name',
+        category: 'time',
+        start: '2021-08-20T11:00:00',
+        end: '2021-08-20T16:00:00'
+      },
+      {
+        headers: {
+          authorization: `Bearer ${cookies.token}`
+        }
+      })
+        .then(res => {
+          console.log(res);
+          document.getElementById('modal').style.display = 'none'
+        })
+        .catch(err => {
+          console.log(err);
+        })
+  };
+
+  const handleClickPrevButton = () => {
+    const calendarInstance = calendarRef.current.getInstance();
+    calendarInstance.prev();
+  };
+  const handleClickNextButton = () => {
+    const calendarInstance = calendarRef.current.getInstance();
+    calendarInstance.next();
+  };
 
   return (
     <div>
+
       <nav>
         <button onClick={handleClickPrevButton}>Prev</button>
         <button onClick={handleClickNextButton}>Next</button>
       </nav>
-      {modalContent()}
+
+      <div id="modal" style={{display: 'none'}}>
+        <label>Nom de l'activité</label>
+        <input id="activity_name" type="text" />
+        <label>Personnes assignées</label>
+        <select id="assigned_users" multiple>
+          {
+            props.data.users.map((user, i) => (
+              <option key={i} value={user.name}>{user.name}</option>
+            ))
+          }
+        </select>
+        <label>Coût de l'activité</label>
+        <input id="expenses_total" type="number"/>
+        <label>Personnes qui ont payé</label>
+        <select id="expenses_users" multiple>
+          {
+            props.data.users.map((user, i) => (
+              <option key={i} value={user.name}>{user.name}</option>
+            ))
+          }
+        </select>
+        <button onClick={updateSchedule}>Valider</button>
+      </div>
+
       <Calendar
         ref={calendarRef}
         taskView={false}
@@ -146,12 +121,13 @@ export default function Scheduler(props) {
           },
         }}
 
-        schedules={events}
+        schedules={props.data.trip.activities}
 
         onBeforeUpdateSchedule={handleBeforeUpdateSchedule}
         onBeforeCreateSchedule={handleBeforeCreateSchedule}
         onBeforeDeleteSchedule={handleBeforeDeleteSchedule}
       />
+
     </div>
   )
 };
