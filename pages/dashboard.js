@@ -8,11 +8,10 @@ export default function Dashboard({ trips }) {
       <h1>Dashboard</h1>
 
       <ul>
-        <li><Link href="/login">Voir mes dépenses</Link></li>
-        <li><Link href="/dashboard">Créer un Voyage</Link></li>
-        <li><Link href="/signin">Ajouter des personnes</Link></li>
-        <li><Link href="/signin">Notifications</Link></li>
-        <li><Link href="/conversations">Conversations</Link></li>
+        <li><Link href="/">Créer un Voyage</Link></li>
+        <li><Link href="/">Ajouter des personnes</Link></li>
+        <li><Link href="/">Voir les dépenses</Link></li>
+        <li><Link href="/">Conversations</Link></li>
       </ul>
 
       <ul>

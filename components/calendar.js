@@ -12,36 +12,32 @@ export default function Scheduler(props) {
   const calendarRef = React.createRef();
   const [cookies] = useCookies(['token'])
 
+  const activities = props.data.activities.filter(activity => activity.trip_id === props.data.trip._id)
+
   const handleBeforeCreateSchedule = event => {
+    document.getElementById('modal').setAttribute('action', 'create')
     document.getElementById('modal').setAttribute('start', event.start._date)
     document.getElementById('modal').setAttribute('end', event.end._date)
     document.getElementById('modal').style.display = 'block'
-    console.log(event);
-  }
-
-  const handleBeforeDeleteSchedule = event => {
-    console.log(event);
   }
 
   const handleBeforeUpdateSchedule = event => {
-    console.log(event);
+    document.getElementById('modal').setAttribute('action', 'update')
+    document.getElementById('modal').setAttribute('activity_id', event.schedule.id)
+
+    if (event.target) {
+      document.getElementById('modal').setAttribute('start', event.schedule.start._date)
+      document.getElementById('modal').setAttribute('end', event.schedule.end._date)
+      document.getElementById('modal').style.display = 'block'
+    } else {
+      document.getElementById('modal').setAttribute('start', event.start._date)
+      document.getElementById('modal').setAttribute('end', event.end._date)
+      updateActivities()
+    }
   }
 
-  const updateSchedule = () => {
-    const activity_name = document.getElementById('activity_name').value
-    const assigned_users = Array.from(document.getElementById('assigned_users').options).filter(option => option.selected)
-    const expenses_total = document.getElementById('expenses_total').value
-    const expenses_users = Array.from(document.getElementById('expenses_users').options).filter(option => option.selected)
-    const start = document.getElementById('modal').getAttribute('start')
-    const end = document.getElementById('modal').getAttribute('end')
-
-    axios.post('http://localhost:3001/api/activity',
-      {
-        title: 'activity_name',
-        category: 'time',
-        start: '2021-08-20T11:00:00',
-        end: '2021-08-20T16:00:00'
-      },
+  const handleBeforeDeleteSchedule = event => {
+    axios.delete(`http://localhost:3001/api/activity/${event.schedule.id}`,
       {
         headers: {
           authorization: `Bearer ${cookies.token}`
@@ -49,11 +45,85 @@ export default function Scheduler(props) {
       })
         .then(res => {
           console.log(res);
-          document.getElementById('modal').style.display = 'none'
         })
         .catch(err => {
           console.log(err);
         })
+  }
+
+  const formatDate = (date) => {
+    const year = new Date(date).getFullYear()
+    const month = new Date(date).getMonth() + 1
+    const day = new Date(date).getDate()
+    const hour = new Date(date).getHours()
+    const minutes = new Date(date).getMinutes()
+
+    return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}T${hour < 10 ? `0${hour}` : hour}:${minutes < 10 ? `0${minutes}` : minutes}:00`
+  }
+
+  const updateActivities = () => {
+    const action = document.getElementById('modal').getAttribute('action')
+    const activity_id = document.getElementById('modal').getAttribute('activity_id')
+    const start = document.getElementById('modal').getAttribute('start')
+    const end = document.getElementById('modal').getAttribute('end')
+    const activity_name = document.getElementById('activity_name').value
+    const assigned_users = Array.from(document.getElementById('assigned_users').options).filter(option => option.selected).map(user => user.attributes.user_id.value)
+    const expenses_total = document.getElementById('expenses_total').value
+    const expenses_users = Array.from(document.getElementById('expenses_users').options).filter(option => option.selected).map(user => user.attributes.user_id.value)
+
+
+    if (action === 'create') {
+      axios.post('http://localhost:3001/api/activity',
+        {
+          trip_id: props.data.trip._id,
+          title: activity_name,
+          category: 'time',
+          start: formatDate(start),
+          end: formatDate(end),
+          body: {
+            assigned_users,
+            expenses_total,
+            expenses_users
+          }
+        },
+        {
+          headers: {
+            authorization: `Bearer ${cookies.token}`
+          }
+        })
+          .then(res => {
+            console.log(res);
+            document.getElementById('modal').style.display = 'none'
+          })
+          .catch(err => {
+            console.log(err);
+          })
+    }
+    if (action === 'update') {
+      axios.put(`http://localhost:3001/api/activity/${activity_id}`,
+        {
+          title: activity_name ? activity_name : activities.filter(activity => activity.id === activity_id).title,
+          start: formatDate(start),
+          end: formatDate(end),
+          body: {
+            assigned_users: assigned_users.length > 0 ? assigned_users : activities.filter(activity => activity.id === activity_id)[0].body.assigned_users,
+            expenses_total: expenses_total ? expenses_total : activities.filter(activity => activity.id === activity_id)[0].body.expenses_total,
+            expenses_users: expenses_users.length > 0 ? expenses_users : activities.filter(activity => activity.id === activity_id)[0].body.expenses_users
+          }
+        },
+        {
+          headers: {
+            authorization: `Bearer ${cookies.token}`
+          }
+        })
+          .then(res => {
+            console.log(res);
+            document.getElementById('modal').style.display = 'none'
+          })
+          .catch(err => {
+            console.log(err);
+          })
+    }
   };
 
   const handleClickPrevButton = () => {
@@ -80,7 +150,7 @@ export default function Scheduler(props) {
         <select id="assigned_users" multiple>
           {
             props.data.users.map((user, i) => (
-              <option key={i} value={user.name}>{user.name}</option>
+              <option key={i} user_id={user._id} value={user.name}>{user.name}</option>
             ))
           }
         </select>
@@ -90,11 +160,11 @@ export default function Scheduler(props) {
         <select id="expenses_users" multiple>
           {
             props.data.users.map((user, i) => (
-              <option key={i} value={user.name}>{user.name}</option>
+              <option key={i} user_id={user._id} value={user.name}>{user.name}</option>
             ))
           }
         </select>
-        <button onClick={updateSchedule}>Valider</button>
+        <button onClick={updateActivities}>Valider</button>
       </div>
 
       <Calendar
@@ -109,19 +179,22 @@ export default function Scheduler(props) {
         useDetailPopup={true}
         disableClick={true}
         template={{
-          timegridDisplayPrimayTime(time) {
-            return `${time.hour} h`;
-          },
-          popupDetailDate(isAllDay, start, end) {
-            console.log(start, end);
-            return `start: ${start._date.getTime()} \n end: ${end._date.getTime()}`
-          },
+          // popupDetailDate(isAllDay, start, end) {
+          //   console.log(start, end);
+          //   return `
+          //     <div>start: ${start._date.getHours()}</div>
+          //     <div>end: ${end._date.getHours()}</div>
+          //   `
+          // },
           popupDetailBody(schedule) {
-            return schedule.body.title
+            return `
+              <div>${schedule.title}</div>
+              <div>${schedule.body.expenses_total}€</div>
+            `
           },
         }}
 
-        schedules={props.data.trip.activities}
+        schedules={activities}
 
         onBeforeUpdateSchedule={handleBeforeUpdateSchedule}
         onBeforeCreateSchedule={handleBeforeCreateSchedule}
